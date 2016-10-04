@@ -1,8 +1,12 @@
 package ch.ethz.inf.vs.a1.vs_oanceas_blesensiron;
 
+
+import android.os.ParcelUuid;
+
 import android.Manifest;
+import android.bluetooth.le.ScanFilter;
 import android.content.pm.PackageManager;
-import android.support.v7.app.AppCompatActivity;
+
 import android.os.Bundle;
 
 
@@ -26,16 +30,26 @@ import android.app.ListActivity;
 import android.widget.Toast;
 
 
-public class MainActivity extends ListActivity  {
+import java.util.List;
+import java.util.Arrays;
 
-    private  BluetoothAdapter mBluetoothAdapter;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
+
+
+public class MainActivity extends ListActivity {
+
+    private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
     private Handler mHandler;
 
     private LeDeviceListAdapter mLeDeviceListAdapter;
 
+    private List<ScanFilter> scanFilterList;
+
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +68,17 @@ public class MainActivity extends ListActivity  {
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
+
+        // create ScanFilter List for startLeScan
+        ScanFilter.Builder aBuilder = new ScanFilter.Builder();
+        ScanFilter.Builder bBuilder = new ScanFilter.Builder();
+
+        ParcelUuid a = new ParcelUuid(SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE);
+        aBuilder.setServiceUuid(a);
+        ParcelUuid b = new ParcelUuid(SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE);
+        bBuilder.setServiceUuid(b);
+
+        scanFilterList = Arrays.asList(aBuilder.build(),bBuilder.build());
 
     }
 
@@ -98,36 +123,34 @@ public class MainActivity extends ListActivity  {
                 @Override
                 public void run() {
                     mScanning = false;
-                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                    //mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                    mBluetoothAdapter.getBluetoothLeScanner().stopScan(mScanCallback);
 
                 }
             }, SCAN_PERIOD);
 
             mScanning = true;
-            mBluetoothAdapter.startLeScan(mLeScanCallback);
+            //mBluetoothAdapter.startLeScan(mLeScanCallback);
+            mBluetoothAdapter.getBluetoothLeScanner().startScan(scanFilterList,null,mScanCallback);
+
         } else {
             mScanning = false;
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            //mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            mBluetoothAdapter.getBluetoothLeScanner().stopScan(mScanCallback);
         }
 
 
     }
 
-    // Device scan callback.
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
 
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mLeDeviceListAdapter.addDevice(device);
-                            mLeDeviceListAdapter.notifyDataSetChanged();
-                        }
-                    });
-                }
-            };
+    private ScanCallback mScanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            mLeDeviceListAdapter.addDevice(result.getDevice());
+            mLeDeviceListAdapter.notifyDataSetChanged();
+        }
+
+    };
 
     // Adapter for holding devices found through scanning.
     private class LeDeviceListAdapter extends BaseAdapter {
@@ -141,7 +164,7 @@ public class MainActivity extends ListActivity  {
         }
 
         public void addDevice(BluetoothDevice device) {
-            if(!mLeDevices.contains(device)) {
+            if (!mLeDevices.contains(device)) {
                 mLeDevices.add(device);
             }
         }
@@ -198,7 +221,6 @@ public class MainActivity extends ListActivity  {
         TextView deviceName;
 
     }
-
 
 
 }

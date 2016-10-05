@@ -24,10 +24,22 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.UUID;
 
+
 import android.support.v4.content.ContextCompat;
 import android.support.v4.app.ActivityCompat;
 
 import android.Manifest;
+
+import android.bluetooth.le.ScanFilter;
+import java.util.List;
+import java.util.Arrays;
+import android.os.ParcelUuid;
+
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
+
+import java.lang.Object;
 
 /**
  * Activity for scanning and displaying available Bluetooth LE devices.
@@ -42,7 +54,8 @@ public class MainActivity extends ListActivity {
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
 
-    private UUID[] uuidArray;
+    private List<ScanFilter> scanFilterList;
+    private ScanSettings settings;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,11 +83,34 @@ public class MainActivity extends ListActivity {
             return;
         }
 
-        /*
-        uuidArray = new UUID[2];
-        uuidArray[0] = SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE;
-        uuidArray[1] = SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE;
-        */
+        // create ScanFilter List for new function startLeScan -> does not work yet
+       /* ScanFilter.Builder aBuilder = new ScanFilter.Builder();
+        ScanFilter.Builder bBuilder = new ScanFilter.Builder();
+
+        ParcelUuid a = new ParcelUuid(SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE);
+        aBuilder.setServiceUuid(a);
+        ParcelUuid b = new ParcelUuid(SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE);
+        bBuilder.setServiceUuid(b);
+
+        scanFilterList = Arrays.asList(aBuilder.build(), bBuilder.build());*/
+
+        settings = new ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build();
+        scanFilterList = new ArrayList<ScanFilter>();
+
+        // doesn't work why? wrong UUIDs?
+        //scanFilterList = scanFilters(new UUID[]{SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE,SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE, SensirionSHT31UUIDS.UUID_HUMIDITY_CHARACTERISTIC});
+    }
+
+    private List<ScanFilter> scanFilters(UUID[] serviceUUIDs) {
+        List<ScanFilter> list = new ArrayList<>();
+        for (int i = 0; i <serviceUUIDs.length; i++) {
+            ScanFilter filter = new ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString(serviceUUIDs[i].toString())).build();
+
+            list.add(filter);
+        }
+        return list;
     }
 
     @Override
@@ -167,19 +203,21 @@ public class MainActivity extends ListActivity {
                 @Override
                 public void run() {
                     mScanning = false;
-                    mBluetoothAdapter.startLeScan(mLeScanCallback);
-                    // mBluetoothAdapter.stopLeScan(mLeScanCallback);
+
+                     mBluetoothAdapter.getBluetoothLeScanner().startScan(scanFilterList,settings,mScanCallback);
                     invalidateOptionsMenu();
                 }
             }, SCAN_PERIOD);
 
             mScanning = true;
-            // mBluetoothAdapter.startLeScan(mLeScanCallback);
-            mBluetoothAdapter.startLeScan(mLeScanCallback);
+
+
+             mBluetoothAdapter.getBluetoothLeScanner().startScan(scanFilterList,settings,mScanCallback);
 
         } else {
             mScanning = false;
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+
+            mBluetoothAdapter.getBluetoothLeScanner().stopScan(mScanCallback);
 
         }
         invalidateOptionsMenu();
@@ -251,21 +289,16 @@ public class MainActivity extends ListActivity {
         }
     }
 
-    // Device scan callback.
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
 
+    // Device scan callback of new startScan function
+    private ScanCallback mScanCallback = new ScanCallback() {
                 @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mLeDeviceListAdapter.addDevice(device);
-                            mLeDeviceListAdapter.notifyDataSetChanged();
-                        }
-                    });
-                }
-            };
+                public void onScanResult(int callbackType, ScanResult result) {
+                        mLeDeviceListAdapter.addDevice(result.getDevice());
+                        mLeDeviceListAdapter.notifyDataSetChanged();
+                    }
+
+                    };
 
     static class ViewHolder {
         TextView deviceName;

@@ -29,11 +29,17 @@ import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.Viewport;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 
 public class DeviceControlActivity extends Activity {
 
@@ -49,6 +55,10 @@ public class DeviceControlActivity extends Activity {
     private BluetoothAdapter mBluetoothAdapter;
 
     private BluetoothGatt mBluetoothGatt;
+
+    private GraphView graph;
+    private LineGraphSeries<DataPoint> series;
+    private int lastX = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +77,22 @@ public class DeviceControlActivity extends Activity {
 
         final boolean result = connect(mDeviceAddress);
         Log.e(TAG, "Connect request result=" + result);
+
+        // graph-view
+        graph = (GraphView) findViewById(R.id.graph);
+        series = new LineGraphSeries<DataPoint>();
+        graph.addSeries(series);
+        Viewport viewport = graph.getViewport();
+        viewport.setScrollable(true);
+        viewport.setXAxisBoundsManual(true);
+        viewport.setYAxisBoundsManual(true);
+        viewport.setMinX(0);
+        viewport.setMaxX(40);
+        viewport.setMinY(0);
+        viewport.setMaxY(100);
+        
+
+
     }
 
     @Override
@@ -220,9 +246,13 @@ public class DeviceControlActivity extends Activity {
             // display Data
             if(characteristic.getValue() != null){
                 Log.e(TAG, String.valueOf(convertRawValue(characteristic.getValue())));
+                series.appendData(new DataPoint(lastX++,convertRawValue(characteristic.getValue())),true,40);
+
             }else{
                 Log.e(TAG, "Data = null");
             }
+
+
 
         }
     };

@@ -310,10 +310,10 @@ public class MainActivity extends ListActivity {
     private ScanCallback mScanCallback = new ScanCallback() {
                 @Override
                 public void onScanResult(int callbackType, ScanResult result) {
-                        if(result.getDevice().getName() != null && result.getDevice().getName().equals("Smart Humigadget")) {
+                       // if(result.getDevice().getName() != null && result.getDevice().getName().equals("Smart Humigadget")) {
                           mLeDeviceListAdapter.addDevice(result.getDevice());
                           mLeDeviceListAdapter.notifyDataSetChanged();
-                         }
+                         //}
                 }
 
     };

@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.support.v7.app.AppCompatActivity;
@@ -68,6 +69,17 @@ public class DeviceControlActivity extends Activity {
         Log.e(TAG, "Connect request result=" + result);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        disconnect();
+    }
+    @Override
+    protected void onPause() {
+        super.onDestroy();
+        disconnect();
+    }
+
     /**
      * Initializes a reference to the local Bluetooth adapter.
      *
@@ -121,6 +133,20 @@ public class DeviceControlActivity extends Activity {
         return true;
     }
 
+    /**
+     * Disconnects an existing connection or cancel a pending connection. The disconnection result
+     * is reported asynchronously through the
+     * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
+     * callback.
+     */
+    public void disconnect() {
+        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+            Log.w(TAG, "BluetoothAdapter not initialized");
+            return;
+        }
+        mBluetoothGatt.disconnect();
+    }
+
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -133,11 +159,14 @@ public class DeviceControlActivity extends Activity {
                 Log.e(TAG, "Connected to GATT server.");
                 // Attempts to discover services after successful connection.
                 Log.e(TAG, "Attempting to start service discovery:" +
-                        mBluetoothGatt.discoverServices());
-
+                        gatt.discoverServices());
+                // mBluetoothGatt.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 
                 Log.i(TAG, "Disconnected from GATT server.");
+
+               // final boolean result = connect(mDeviceAddress);
+               // Log.e(TAG, "Connect request result=" + result);
 
             }
         }
@@ -150,12 +179,28 @@ public class DeviceControlActivity extends Activity {
             } else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
             }*/
+
+            // Humidity Service
             BluetoothGattService humidityService =
                     mBluetoothGatt.getService(SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE);
             BluetoothGattCharacteristic humidityCharacteristic =
                     humidityService.getCharacteristic(SensirionSHT31UUIDS.UUID_HUMIDITY_CHARACTERISTIC);
 
+            // Notification Descriptor
+            BluetoothGattDescriptor descriptor =
+                    new BluetoothGattDescriptor(SensirionSHT31UUIDS.NOTIFICATION_DESCRIPTOR_UUID,BluetoothGattDescriptor.PERMISSION_WRITE);
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+
+            humidityCharacteristic.addDescriptor(descriptor);
+            mBluetoothGatt.writeDescriptor(descriptor);
+
+            // setup Notifications
+            mBluetoothGatt.setCharacteristicNotification(humidityCharacteristic,true);
+
+
             displayCharacteristic(humidityCharacteristic);
+
+         
         }
 
         @Override

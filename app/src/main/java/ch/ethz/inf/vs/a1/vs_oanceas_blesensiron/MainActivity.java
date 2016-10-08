@@ -87,24 +87,16 @@ public class MainActivity extends ListActivity {
             return;
         }
 
-        // create ScanFilter List for new function startLeScan -> does not work yet
-       /* ScanFilter.Builder aBuilder = new ScanFilter.Builder();
-        ScanFilter.Builder bBuilder = new ScanFilter.Builder();
-
-        ParcelUuid a = new ParcelUuid(SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE);
-        aBuilder.setServiceUuid(a);
-        ParcelUuid b = new ParcelUuid(SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE);
-        bBuilder.setServiceUuid(b);
-
-        scanFilterList = Arrays.asList(aBuilder.build(), bBuilder.build());*/
-
         settings = new ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                 .build();
-        scanFilterList = new ArrayList<ScanFilter>();
 
-        // doesn't work why? wrong UUIDs?
-        //scanFilterList = scanFilters(new UUID[]{SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE,SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE, SensirionSHT31UUIDS.UUID_HUMIDITY_CHARACTERISTIC});
+        // create ScanFilter List for function startLeScan
+        ScanFilter.Builder builder = new ScanFilter.Builder();
+        builder.setDeviceName("Smart Humigadget");
+        scanFilterList = new ArrayList<ScanFilter>();
+        scanFilterList.add(builder.build());
+
     }
 
     private List<ScanFilter> scanFilters(UUID[] serviceUUIDs) {
@@ -159,7 +151,7 @@ public class MainActivity extends ListActivity {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
-        
+
         // Ensure ACCESS_FINE_LOCATION is permitted by user
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED ) {
@@ -314,10 +306,9 @@ public class MainActivity extends ListActivity {
     private ScanCallback mScanCallback = new ScanCallback() {
                 @Override
                 public void onScanResult(int callbackType, ScanResult result) {
-                       // if(result.getDevice().getName() != null && result.getDevice().getName().equals("Smart Humigadget")) {
-                          mLeDeviceListAdapter.addDevice(result.getDevice());
-                          mLeDeviceListAdapter.notifyDataSetChanged();
-                         //}
+                    mLeDeviceListAdapter.addDevice(result.getDevice());
+                    mLeDeviceListAdapter.notifyDataSetChanged();
+
                 }
 
     };

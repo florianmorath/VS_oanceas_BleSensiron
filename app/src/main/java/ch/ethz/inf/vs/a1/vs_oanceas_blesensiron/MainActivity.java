@@ -156,12 +156,10 @@ public class MainActivity extends ListActivity {
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
         if (!mBluetoothAdapter.isEnabled()) {
-            if (!mBluetoothAdapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            }
         }
-
+        
         // Ensure ACCESS_FINE_LOCATION is permitted by user
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED ) {
@@ -175,7 +173,9 @@ public class MainActivity extends ListActivity {
         // Initializes list view adapter.
         mLeDeviceListAdapter = new LeDeviceListAdapter();
         setListAdapter(mLeDeviceListAdapter);
-        scanLeDevice(true);
+        if(mBluetoothAdapter.isEnabled()) {
+            scanLeDevice(true);
+        }
     }
 
     @Override
@@ -191,7 +191,9 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        scanLeDevice(false);
+        if(mBluetoothAdapter != null) {
+            scanLeDevice(false);
+        }
         mLeDeviceListAdapter.clear();
     }
 
@@ -213,28 +215,30 @@ public class MainActivity extends ListActivity {
     }
 
     private void scanLeDevice(final boolean enable) {
-        if (enable) {
-            // Stops scanning after a pre-defined scan period.
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mScanning = false;
+        if(mBluetoothAdapter != null) {
+            if (enable) {
+                // Stops scanning after a pre-defined scan period.
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mScanning = false;
 
-                     mBluetoothAdapter.getBluetoothLeScanner().startScan(scanFilterList,settings,mScanCallback);
-                    invalidateOptionsMenu();
+                        mBluetoothAdapter.getBluetoothLeScanner().startScan(scanFilterList, settings, mScanCallback);
+                        invalidateOptionsMenu();
+                    }
+                }, SCAN_PERIOD);
+
+                mScanning = true;
+
+
+                mBluetoothAdapter.getBluetoothLeScanner().startScan(scanFilterList, settings, mScanCallback);
+
+            } else {
+                mScanning = false;
+                if(mBluetoothAdapter.getBluetoothLeScanner() != null) {
+                    mBluetoothAdapter.getBluetoothLeScanner().stopScan(mScanCallback);
                 }
-            }, SCAN_PERIOD);
-
-            mScanning = true;
-
-
-             mBluetoothAdapter.getBluetoothLeScanner().startScan(scanFilterList,settings,mScanCallback);
-
-        } else {
-            mScanning = false;
-
-            mBluetoothAdapter.getBluetoothLeScanner().stopScan(mScanCallback);
-
+            }
         }
         invalidateOptionsMenu();
     }

@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -57,7 +58,8 @@ public class DeviceControlActivity extends Activity {
     private BluetoothGatt mBluetoothGatt;
 
     private GraphView graph;
-    private LineGraphSeries<DataPoint> series;
+    private LineGraphSeries<DataPoint> humiditySeries;
+    private LineGraphSeries<DataPoint> tempSeries;
     private int lastX = 0;
 
     @Override
@@ -80,8 +82,13 @@ public class DeviceControlActivity extends Activity {
 
         // graph-view
         graph = (GraphView) findViewById(R.id.graph);
-        series = new LineGraphSeries<DataPoint>();
-        graph.addSeries(series);
+        humiditySeries = new LineGraphSeries<DataPoint>();
+        tempSeries = new LineGraphSeries<DataPoint>();
+        tempSeries.setColor(Color.RED);
+
+        graph.addSeries(tempSeries);
+        graph.addSeries(humiditySeries);
+
         Viewport viewport = graph.getViewport();
         viewport.setScrollable(true);
         viewport.setXAxisBoundsManual(true);
@@ -90,8 +97,6 @@ public class DeviceControlActivity extends Activity {
         viewport.setMaxX(40);
         viewport.setMinY(0);
         viewport.setMaxY(100);
-
-
 
     }
 
@@ -273,9 +278,10 @@ public class DeviceControlActivity extends Activity {
 
                 if(characteristic.getService().getUuid().equals(SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE)) {
                     Log.e(TAG, "Humidity value = " + String.valueOf(convertRawValue(characteristic.getValue())));
-                    series.appendData(new DataPoint(lastX++, convertRawValue(characteristic.getValue())), true, 40);
+                    humiditySeries.appendData(new DataPoint(lastX++, convertRawValue(characteristic.getValue())), true, 40);
                 }else if (characteristic.getService().getUuid().equals(SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE)){
                     Log.e(TAG, "Temperature value = " + String.valueOf(convertRawValue(characteristic.getValue())));
+                    tempSeries.appendData(new DataPoint(lastX,convertRawValue(characteristic.getValue())), true, 40);
                 }
             }else{
                 Log.e(TAG, "Data = null");

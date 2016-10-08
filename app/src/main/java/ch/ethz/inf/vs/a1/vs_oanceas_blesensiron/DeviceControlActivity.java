@@ -90,7 +90,7 @@ public class DeviceControlActivity extends Activity {
         viewport.setMaxX(40);
         viewport.setMinY(0);
         viewport.setMaxY(100);
-        
+
 
 
     }
@@ -191,9 +191,6 @@ public class DeviceControlActivity extends Activity {
 
                 Log.i(TAG, "Disconnected from GATT server.");
 
-               // final boolean result = connect(mDeviceAddress);
-               // Log.e(TAG, "Connect request result=" + result);
-
             }
         }
 
@@ -212,18 +209,46 @@ public class DeviceControlActivity extends Activity {
             BluetoothGattCharacteristic humidityCharacteristic =
                     humidityService.getCharacteristic(SensirionSHT31UUIDS.UUID_HUMIDITY_CHARACTERISTIC);
 
-            // Notification Descriptor
-            BluetoothGattDescriptor descriptor =
+            // setup Notifications for Humidity
+            BluetoothGattDescriptor humDescriptor =
                     new BluetoothGattDescriptor(SensirionSHT31UUIDS.NOTIFICATION_DESCRIPTOR_UUID,BluetoothGattDescriptor.PERMISSION_WRITE);
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            humDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 
-            humidityCharacteristic.addDescriptor(descriptor);
-            mBluetoothGatt.writeDescriptor(descriptor);
+            humidityCharacteristic.addDescriptor(humDescriptor);
 
-            // setup Notifications
+            mBluetoothGatt.writeDescriptor(humDescriptor);
+
             mBluetoothGatt.setCharacteristicNotification(humidityCharacteristic,true);
 
 
+        }
+
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            super.onDescriptorWrite(gatt, descriptor, status);
+
+
+
+            if(descriptor.getCharacteristic().getUuid().equals(SensirionSHT31UUIDS.UUID_HUMIDITY_CHARACTERISTIC)){
+                Log.e(TAG, "onDescriptorWrite");
+
+                // Temperature Service
+                BluetoothGattService tempService =
+                        mBluetoothGatt.getService(SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE);
+                BluetoothGattCharacteristic tempCharacteristic =
+                        tempService.getCharacteristic(SensirionSHT31UUIDS.UUID_TEMPERATURE_CHARACTERISTIC);
+
+                // setup Notifications for Temperature
+                BluetoothGattDescriptor tempDescriptor =
+                        new BluetoothGattDescriptor(SensirionSHT31UUIDS.NOTIFICATION_DESCRIPTOR_UUID,BluetoothGattDescriptor.PERMISSION_WRITE);
+                tempDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+
+                tempCharacteristic.addDescriptor(tempDescriptor);
+
+                mBluetoothGatt.writeDescriptor(tempDescriptor);
+
+                mBluetoothGatt.setCharacteristicNotification(tempCharacteristic,true);
+            }
 
         }
 
@@ -245,9 +270,13 @@ public class DeviceControlActivity extends Activity {
 
             // display Data
             if(characteristic.getValue() != null){
-                Log.e(TAG, String.valueOf(convertRawValue(characteristic.getValue())));
-                series.appendData(new DataPoint(lastX++,convertRawValue(characteristic.getValue())),true,40);
 
+                if(characteristic.getService().getUuid().equals(SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE)) {
+                    Log.e(TAG, "Humidity value = " + String.valueOf(convertRawValue(characteristic.getValue())));
+                    series.appendData(new DataPoint(lastX++, convertRawValue(characteristic.getValue())), true, 40);
+                }else if (characteristic.getService().getUuid().equals(SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE)){
+                    Log.e(TAG, "Temperature value = " + String.valueOf(convertRawValue(characteristic.getValue())));
+                }
             }else{
                 Log.e(TAG, "Data = null");
             }

@@ -61,8 +61,8 @@ public class DeviceControlActivity extends Activity {
 
         initialize();
 
-        final boolean result = connect(mDeviceAddress);
-        Log.e(TAG, "Connect request result = " + result);
+       // final boolean result = connect(mDeviceAddress);
+        //Log.e(TAG, "Connect request result = " + result);
 
         // graph-view
         graph = (GraphView) findViewById(R.id.graph);
@@ -81,6 +81,13 @@ public class DeviceControlActivity extends Activity {
         viewport.setMaxX(40);
         viewport.setMinY(0);
         viewport.setMaxY(100);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        final boolean result = connect(mDeviceAddress);
+        Log.e(TAG, "Connect request result = " + result);
     }
 
     @Override
@@ -244,17 +251,27 @@ public class DeviceControlActivity extends Activity {
 
             // display Data
                 if (characteristic.getValue() != null) {
+                    float value = convertRawValue(characteristic.getValue());
 
                     if (characteristic.getService().getUuid().equals(SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE)) {
-                        Log.e(TAG, "Humidity value = " + String.valueOf(convertRawValue(characteristic.getValue())));
+                        Log.e(TAG, "Humidity value = " + String.valueOf(value));
 
-                        humiditySeries.appendData(new DataPoint(lastX++, convertRawValue(characteristic.getValue())), true, 40);
+                        humiditySeries.appendData(new DataPoint(lastX++, value), true, 40);
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
 
                     } else if (characteristic.getService().getUuid().equals(SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE)) {
-                        Log.e(TAG, "Temperature value = " + String.valueOf(convertRawValue(characteristic.getValue())));
+                        Log.e(TAG, "Temperature value = " + String.valueOf(value));
 
-                        tempSeries.appendData(new DataPoint(lastX, convertRawValue(characteristic.getValue())), true, 40);
-
+                        tempSeries.appendData(new DataPoint(lastX, value), true, 40);
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 } else {
                     Log.e(TAG, "Data = null");

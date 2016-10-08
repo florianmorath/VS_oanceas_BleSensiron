@@ -9,8 +9,10 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -161,6 +163,12 @@ public class MainActivity extends ListActivity {
 
         }
 
+        // ensure location service is enabled
+        if(!isLocationServiceEnabled()){
+            Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(myIntent);
+        }
+
 
         // Initializes list view adapter.
         mLeDeviceListAdapter = new LeDeviceListAdapter();
@@ -168,6 +176,28 @@ public class MainActivity extends ListActivity {
         if(mBluetoothAdapter.isEnabled()) {
             scanLeDevice(true);
         }
+    }
+
+    public boolean isLocationServiceEnabled(){
+        LocationManager locationManager = null;
+        boolean gps_enabled= false,network_enabled = false;
+
+        if(locationManager ==null)
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        try{
+            gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        }catch(Exception ex){
+            //do nothing...
+        }
+
+        try{
+            network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        }catch(Exception ex){
+            //do nothing...
+        }
+
+        return gps_enabled || network_enabled;
+
     }
 
     @Override

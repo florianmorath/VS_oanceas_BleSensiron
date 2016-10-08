@@ -25,8 +25,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.UUID;
-
 
 import android.support.v4.content.ContextCompat;
 import android.support.v4.app.ActivityCompat;
@@ -35,8 +33,6 @@ import android.Manifest;
 
 import android.bluetooth.le.ScanFilter;
 import java.util.List;
-import java.util.Arrays;
-import android.os.ParcelUuid;
 
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
@@ -98,17 +94,6 @@ public class MainActivity extends ListActivity {
         builder.setDeviceName("Smart Humigadget");
         scanFilterList = new ArrayList<ScanFilter>();
         scanFilterList.add(builder.build());
-
-    }
-
-    private List<ScanFilter> scanFilters(UUID[] serviceUUIDs) {
-        List<ScanFilter> list = new ArrayList<>();
-        for (int i = 0; i <serviceUUIDs.length; i++) {
-            ScanFilter filter = new ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString(serviceUUIDs[i].toString())).build();
-
-            list.add(filter);
-        }
-        return list;
     }
 
     @Override
@@ -160,7 +145,6 @@ public class MainActivity extends ListActivity {
 
         } else {
             ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-
         }
 
         // ensure location service is enabled
@@ -168,7 +152,6 @@ public class MainActivity extends ListActivity {
             Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
             startActivity(myIntent);
         }
-
 
         // Initializes list view adapter.
         mLeDeviceListAdapter = new LeDeviceListAdapter();
@@ -197,7 +180,6 @@ public class MainActivity extends ListActivity {
         }
 
         return gps_enabled || network_enabled;
-
     }
 
     @Override
@@ -244,15 +226,12 @@ public class MainActivity extends ListActivity {
                     @Override
                     public void run() {
                         mScanning = false;
-
                         mBluetoothAdapter.getBluetoothLeScanner().startScan(scanFilterList, settings, mScanCallback);
                         invalidateOptionsMenu();
                     }
                 }, SCAN_PERIOD);
 
                 mScanning = true;
-
-
                 mBluetoothAdapter.getBluetoothLeScanner().startScan(scanFilterList, settings, mScanCallback);
 
             } else {
@@ -338,7 +317,6 @@ public class MainActivity extends ListActivity {
                 public void onScanResult(int callbackType, ScanResult result) {
                     mLeDeviceListAdapter.addDevice(result.getDevice());
                     mLeDeviceListAdapter.notifyDataSetChanged();
-
                 }
 
     };

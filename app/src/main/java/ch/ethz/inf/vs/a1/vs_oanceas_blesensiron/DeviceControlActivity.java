@@ -8,27 +8,15 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.app.Activity;
 
-
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
+
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.os.IBinder;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ExpandableListView;
-import android.widget.SimpleExpandableListAdapter;
-import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.Viewport;
@@ -37,10 +25,6 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 
 public class DeviceControlActivity extends Activity {
 
@@ -78,7 +62,7 @@ public class DeviceControlActivity extends Activity {
         initialize();
 
         final boolean result = connect(mDeviceAddress);
-        Log.e(TAG, "Connect request result=" + result);
+        Log.e(TAG, "Connect request result = " + result);
 
         // graph-view
         graph = (GraphView) findViewById(R.id.graph);
@@ -97,7 +81,6 @@ public class DeviceControlActivity extends Activity {
         viewport.setMaxX(40);
         viewport.setMinY(0);
         viewport.setMaxY(100);
-
     }
 
     @Override
@@ -131,7 +114,6 @@ public class DeviceControlActivity extends Activity {
             Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
             return false;
         }
-
         return true;
     }
 
@@ -195,18 +177,12 @@ public class DeviceControlActivity extends Activity {
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 
                 Log.i(TAG, "Disconnected from GATT server.");
-
             }
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             Log.e(TAG, "onServicesDiscovered");
-            /*if (status == BluetoothGatt.GATT_SUCCESS) {
-                broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
-            } else {
-                Log.w(TAG, "onServicesDiscovered received: " + status);
-            }*/
 
             // Humidity Service
             BluetoothGattService humidityService =
@@ -225,14 +201,11 @@ public class DeviceControlActivity extends Activity {
 
             mBluetoothGatt.setCharacteristicNotification(humidityCharacteristic,true);
 
-
         }
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
-
-
 
             if(descriptor.getCharacteristic().getUuid().equals(SensirionSHT31UUIDS.UUID_HUMIDITY_CHARACTERISTIC)){
                 Log.e(TAG, "onDescriptorWrite");
@@ -262,16 +235,12 @@ public class DeviceControlActivity extends Activity {
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
             Log.e(TAG, "onCharacteristicRead");
-           /* if (status == BluetoothGatt.GATT_SUCCESS) {
-                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
-            }*/
         }
 
         @Override
         public synchronized void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
             Log.e(TAG, "onCharacteristicChanged");
-           /* broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);*/
 
             // display Data
                 if (characteristic.getValue() != null) {
@@ -290,13 +259,8 @@ public class DeviceControlActivity extends Activity {
                 } else {
                     Log.e(TAG, "Data = null");
                 }
-
-
-
         }
     };
-
-
 
     private float convertRawValue(byte[] raw){
         ByteBuffer wrapper = ByteBuffer.wrap(raw).order(ByteOrder.LITTLE_ENDIAN);

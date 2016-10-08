@@ -198,9 +198,7 @@ public class DeviceControlActivity extends Activity {
             mBluetoothGatt.setCharacteristicNotification(humidityCharacteristic,true);
 
 
-            displayCharacteristic(humidityCharacteristic);
 
-         
         }
 
         @Override
@@ -218,15 +216,18 @@ public class DeviceControlActivity extends Activity {
                                             BluetoothGattCharacteristic characteristic) {
             Log.e(TAG, "onCharacteristicChanged");
            /* broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);*/
+
+            // display Data
+            if(characteristic.getValue() != null){
+                Log.e(TAG, String.valueOf(convertRawValue(characteristic.getValue())));
+            }else{
+                Log.e(TAG, "Data = null");
+            }
+
         }
     };
 
-    private void displayCharacteristic(BluetoothGattCharacteristic gattCharacteristic) {
 
-        Log.e(TAG, "displayData");
-
-
-    }
 
     private float convertRawValue(byte[] raw){
         ByteBuffer wrapper = ByteBuffer.wrap(raw).order(ByteOrder.LITTLE_ENDIAN);

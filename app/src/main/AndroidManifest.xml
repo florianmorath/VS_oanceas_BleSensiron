@@ -2,10 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ch.ethz.inf.vs.a1.vs_oanceas_blesensiron">
 
-    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -20,6 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".DeviceControlActivity"></activity>
     </application>
 
 </manifest>

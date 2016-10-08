@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,6 +46,9 @@ import java.lang.Object;
  * Activity for scanning and displaying available Bluetooth LE devices.
  */
 public class MainActivity extends ListActivity {
+
+    private final static String TAG = MainActivity.class.getSimpleName();
+
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
@@ -147,6 +151,8 @@ public class MainActivity extends ListActivity {
     protected void onResume() {
         super.onResume();
 
+        Log.e(TAG, "onResume");
+
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
         if (!mBluetoothAdapter.isEnabled()) {
@@ -194,6 +200,16 @@ public class MainActivity extends ListActivity {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         if (device == null) return;
         // start Intent
+        Log.e(TAG, "onListItemClick");
+
+        final Intent intent = new Intent(this, DeviceControlActivity.class);
+        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
+        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+        if (mScanning) {
+            mBluetoothAdapter.getBluetoothLeScanner().stopScan(mScanCallback);
+            mScanning = false;
+        }
+        startActivity(intent);
     }
 
     private void scanLeDevice(final boolean enable) {

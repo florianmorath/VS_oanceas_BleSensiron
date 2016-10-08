@@ -251,7 +251,7 @@ public class MainActivity extends ListActivity {
         }
 
         public void addDevice(BluetoothDevice device) {
-            if(!mLeDevices.contains(device)) {
+            if(!(mLeDevices.contains(device))) {
                 mLeDevices.add(device);
             }
         }
@@ -310,11 +310,13 @@ public class MainActivity extends ListActivity {
     private ScanCallback mScanCallback = new ScanCallback() {
                 @Override
                 public void onScanResult(int callbackType, ScanResult result) {
-                        mLeDeviceListAdapter.addDevice(result.getDevice());
-                        mLeDeviceListAdapter.notifyDataSetChanged();
-                    }
+                        if(result.getDevice().getName() != null && result.getDevice().getName().equals("Smart Humigadget")) {
+                          mLeDeviceListAdapter.addDevice(result.getDevice());
+                          mLeDeviceListAdapter.notifyDataSetChanged();
+                         }
+                }
 
-                    };
+    };
 
     static class ViewHolder {
         TextView deviceName;

@@ -48,7 +48,7 @@ public class DeviceControlActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e(TAG, "onCreate");
+        Log.i(TAG, "onCreate");
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_control);
@@ -57,12 +57,9 @@ public class DeviceControlActivity extends Activity {
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
-        Log.e(TAG, mDeviceName);
+        Log.i(TAG, mDeviceName);
 
         initialize();
-
-       // final boolean result = connect(mDeviceAddress);
-        //Log.e(TAG, "Connect request result = " + result);
 
         // graph-view
         graph = (GraphView) findViewById(R.id.graph);
@@ -87,7 +84,7 @@ public class DeviceControlActivity extends Activity {
     protected void onResume() {
         super.onResume();
         final boolean result = connect(mDeviceAddress);
-        Log.e(TAG, "Connect request result = " + result);
+        Log.i(TAG, "Connect request result = " + result);
     }
 
     @Override
@@ -172,13 +169,13 @@ public class DeviceControlActivity extends Activity {
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.e(TAG, "onConnectionStateChange");
+            Log.i(TAG, "onConnectionStateChange");
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
 
-                Log.e(TAG, "Connected to GATT server.");
+                Log.i(TAG, "Connected to GATT server.");
                 // Attempts to discover services after successful connection.
-                Log.e(TAG, "Attempting to start service discovery:" +
+                Log.i(TAG, "Attempting to start service discovery:" +
                         gatt.discoverServices());
                 // mBluetoothGatt.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -189,7 +186,7 @@ public class DeviceControlActivity extends Activity {
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            Log.e(TAG, "onServicesDiscovered");
+            Log.i(TAG, "onServicesDiscovered");
 
             // Humidity Service
             BluetoothGattService humidityService =
@@ -215,7 +212,7 @@ public class DeviceControlActivity extends Activity {
             super.onDescriptorWrite(gatt, descriptor, status);
 
             if(descriptor.getCharacteristic().getUuid().equals(SensirionSHT31UUIDS.UUID_HUMIDITY_CHARACTERISTIC)){
-                Log.e(TAG, "onDescriptorWrite");
+                Log.i(TAG, "onDescriptorWrite");
 
                 // Temperature Service
                 BluetoothGattService tempService =
@@ -241,20 +238,20 @@ public class DeviceControlActivity extends Activity {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
-            Log.e(TAG, "onCharacteristicRead");
+            Log.i(TAG, "onCharacteristicRead");
         }
 
         @Override
         public synchronized void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-            Log.e(TAG, "onCharacteristicChanged");
+            Log.i(TAG, "onCharacteristicChanged");
 
             // display Data
                 if (characteristic.getValue() != null) {
                     float value = convertRawValue(characteristic.getValue());
 
                     if (characteristic.getService().getUuid().equals(SensirionSHT31UUIDS.UUID_HUMIDITY_SERVICE)) {
-                        Log.e(TAG, "Humidity value = " + String.valueOf(value));
+                        Log.i(TAG, "Humidity value = " + String.valueOf(value));
 
                         humiditySeries.appendData(new DataPoint(lastX++, value), true, 40);
                         try {
@@ -264,7 +261,7 @@ public class DeviceControlActivity extends Activity {
                         }
 
                     } else if (characteristic.getService().getUuid().equals(SensirionSHT31UUIDS.UUID_TEMPERATURE_SERVICE)) {
-                        Log.e(TAG, "Temperature value = " + String.valueOf(value));
+                        Log.i(TAG, "Temperature value = " + String.valueOf(value));
 
                         tempSeries.appendData(new DataPoint(lastX, value), true, 40);
                         try {

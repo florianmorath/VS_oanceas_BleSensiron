@@ -130,7 +130,7 @@ public class MainActivity extends ListActivity {
     protected void onResume() {
         super.onResume();
 
-        Log.e(TAG, "onResume");
+        Log.i(TAG, "onResume");
 
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
@@ -206,7 +206,7 @@ public class MainActivity extends ListActivity {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         if (device == null) return;
         // start Intent
-        Log.e(TAG, "onListItemClick");
+        Log.i(TAG, "onListItemClick");
 
         final Intent intent = new Intent(this, DeviceControlActivity.class);
         intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
